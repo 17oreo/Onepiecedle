@@ -32,12 +32,18 @@
 
 // Spoiler cut-offs (chapter numbers)
 const SPOILER_LEVELS = {
-  egghead: { label: "Last complete arc (Egghead)", short: "Egghead", chapter: 1125,
-             note: "Up to ch. 1125 / ep. 1155" },
-  anime:  { label: "Latest anime episode", short: "Anime", chapter: 1150,
-             note: "Up to ep. 1180 (~ch. 1150)" },
-  manga:  { label: "Latest manga chapter", short: "Manga", chapter: 1198,
-             note: "Up to ch. 1198" },
+  // Completed-arc cutoffs (shown in the dropdown). Short aftermath arcs are folded into the arc before them,
+  // and smaller arcs (Punk Hazard, Zou, Levely, ...) are included in the next big milestone.
+  alabasta:   { type: "arc", label: "Up to Alabasta",          short: "Alabasta",   chapter: 217,  note: "Romance Dawn → Alabasta · ch. 1–217" },
+  enies:      { type: "arc", label: "Up to Enies Lobby",       short: "Enies Lobby", chapter: 441, note: "Jaya → Post-Enies Lobby · ch. 1–441" },
+  marineford: { type: "arc", label: "Up to Marineford",        short: "Marineford", chapter: 597,  note: "Thriller Bark → Post-War · ch. 1–597" },
+  fishman:    { type: "arc", label: "Up to Fish-Man Island",   short: "Fish-Man Island", chapter: 653, note: "Return to Sabaody → Fish-Man Island · ch. 1–653" },
+  dressrosa:  { type: "arc", label: "Up to Dressrosa",         short: "Dressrosa",  chapter: 801,  note: "Punk Hazard → Dressrosa · ch. 1–801" },
+  wci:        { type: "arc", label: "Up to Whole Cake Island", short: "Whole Cake", chapter: 902,  note: "Zou → Whole Cake Island · ch. 1–902" },
+  wano:       { type: "arc", label: "Up to Wano",              short: "Wano",       chapter: 1057, note: "Levely → Wano · ch. 1–1057" },
+  egghead:    { type: "arc", label: "Up to Egghead",           short: "Egghead",    chapter: 1125, note: "Egghead · ch. 1–1125 / ep. 1155" },
+  anime:      { type: "anime", label: "Latest anime episode",  short: "Anime",      chapter: 1150, note: "Up to ep. 1180 (~ch. 1150)" },
+  manga:      { type: "manga", label: "Latest manga chapter",  short: "Manga",      chapter: 1198, note: "Up to ch. 1198" },
 };
 
 // Arcs in story order with their first chapter
@@ -72,7 +78,7 @@ const CHARACTERS = [
     epithet: "\"Cat Burglar\"", clue: "A navigator who first appears as a thief stealing from pirates." },
   { name: "Usopp", aliases: ["Sogeking", "God Usopp"], gender: "Male",
     aff: ["Straw Hat Pirates"], fruit: { type: [], name: "" },
-    haki: "O", bounty: 500000000, height: 174, origin: "East Blue", debut: 23,
+    haki: "O", bounty: 500000000, height: 176, origin: "East Blue", debut: 23,
     epithet: "\"God\" / \"Sogeking\"", clue: "A long-nosed sniper and storyteller from a quiet village." },
   { name: "Sanji", aliases: ["Black Leg", "Vinsmoke Sanji", "Mr. Prince"], gender: "Male",
     aff: ["Straw Hat Pirates", "Vinsmoke Family", "Baratie"], fruit: { type: [], name: "" },
@@ -115,7 +121,7 @@ const CHARACTERS = [
     epithet: "\"Chaser\"", clue: "A sharpshooter whose son is also a sniper." },
   { name: "Silvers Rayleigh", aliases: ["Rayleigh", "Dark King", "Ray"], gender: "Male",
     aff: ["Roger Pirates"], fruit: { type: [], name: "" },
-    haki: "OAC", bounty: null, height: 188, origin: "Unknown", debut: 19,
+    haki: "OAC", bounty: null, height: 188, origin: "Unknown", debut: 19, reveal: 498,
     epithet: "\"Dark King\"", clue: "An old coating mechanic who trained the hero for two years." },
   { name: "Gol D. Roger", aliases: ["Roger", "Gold Roger", "Pirate King"], gender: "Male",
     aff: ["Roger Pirates"], fruit: { type: [], name: "" },
@@ -309,7 +315,7 @@ const CHARACTERS = [
   // ---------------- REVOLUTIONARY ARMY ----------------
   { name: "Sabo", aliases: ["Flame Emperor"], gender: "Male",
     aff: ["Revolutionary Army"], fruit: { type: ["Logia"], name: "Mera Mera no Mi" },
-    haki: "OA", bounty: 602000000, height: 187, origin: "East Blue", debut: 583,
+    haki: "OA", bounty: 602000000, height: 187, origin: "East Blue", debut: 583, reveal: 731,
     epithet: "\"Flame Emperor\"", clue: "The hero's other sworn brother, thought dead for years." },
   { name: "Monkey D. Dragon", aliases: ["Dragon"], gender: "Male",
     aff: ["Revolutionary Army", "Marines"], fruit: { type: ["Unknown"], name: "Unknown" },
@@ -794,7 +800,7 @@ const CHARACTERS = [
     changes: [{ ch: 1145, haki: "A" }] },
   { name: "Scopper Gaban", aliases: ["Gaban", "Ya"], gender: "Male",
     aff: ["Roger Pirates"], fruit: { type: [], name: "" },
-    haki: "", bounty: null, height: null, origin: "Unknown", debut: 19,
+    haki: "", bounty: null, height: null, origin: "Unknown", debut: 19, reveal: 966,
     epithet: "\"Left Arm of the Pirate King\" / \"Mountain-Eater\"", clue: "A dual-axe veteran of the Pirate King's crew who retired to the land of giants.",
     changes: [{ ch: 1146, haki: "OAC" }] },
   { name: "Figarland Shamrock", aliases: ["Shamrock"], gender: "Male",
@@ -825,11 +831,11 @@ const CHARACTERS = [
   // ---------- Additions: legends, Five Elders, and side characters from every saga ----------
   {name: "Rocks D. Xebec", aliases: ["Rocks", "Xebec", "Davy D. Xebec"], gender: "Male", aff: ["Rocks Pirates"], fruit: {type: [], name: ""}, haki: "AC", bounty: null, height: 435, origin: "West Blue", debut: 957, epithet: "Captain of the Rocks Pirates", clue: "A legendary captain whose crew once held Whitebeard, Big Mom and Kaidou."},
   {name: "Imu", aliases: ["Nerona Imu", "Im-sama"], gender: "Male", aff: ["World Government", "World Nobles", "First Twenty"], fruit: {type: ["Unknown"], name: "Unknown"}, haki: "", bounty: 0, height: null, origin: "Unknown", debut: 906, epithet: "King of the World", clue: "The secret occupant of the Empty Throne in Mary Geoise.", changes: [{ch: 1125, haki: "O"}, {ch: 1151, haki: "OC"}, {ch: 1179, fruit: {type: ["Unknown"], name: "Akuma no Mi"}}]},
-  {name: "Jaygarcia Saturn", aliases: ["Saturn"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Gyuki)"}, haki: "OC", bounty: 0, height: null, origin: "Unknown", debut: 233, epithet: "Warrior God of Science and Defense", clue: "A spider-legged Elder who led the siege of Egghead."},
-  {name: "Marcus Mars", aliases: ["Mars"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Itsumade)"}, haki: "OC", bounty: 0, height: null, origin: "Unknown", debut: 233, epithet: "Warrior God of Environment", clue: "The tallest Elder, who turns into a giant demon bird."},
-  {name: "Topman Warcury", aliases: ["Warcury"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Fengxi)"}, haki: "OC", bounty: 0, height: null, origin: "Unknown", debut: 233, epithet: "Warrior God of Justice", clue: "A huge-shouldered Elder who becomes a giant boar."},
-  {name: "Ethanbaron V. Nusjuro", aliases: ["Nusjuro"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Bakotsu)"}, haki: "OAC", bounty: 0, height: null, origin: "Unknown", debut: 233, epithet: "Warrior God of Finance", clue: "A bald swordsman Elder who becomes a skeletal horse."},
-  {name: "Shepherd Ju Peter", aliases: ["Ju Peter", "Peter"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Sandworm)"}, haki: "O", bounty: 0, height: null, origin: "Unknown", debut: 233, epithet: "Warrior God of Agriculture", clue: "An Elder who swallows enemies as a giant sandworm."},
+  {name: "Jaygarcia Saturn", aliases: ["Saturn"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Gyuki)"}, haki: "OC", bounty: 0, height: null, origin: "Unknown", debut: 233, reveal: 1086, epithet: "Warrior God of Science and Defense", clue: "A spider-legged Elder who led the siege of Egghead."},
+  {name: "Marcus Mars", aliases: ["Mars"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Itsumade)"}, haki: "OC", bounty: 0, height: null, origin: "Unknown", debut: 233, reveal: 1086, epithet: "Warrior God of Environment", clue: "The tallest Elder, who turns into a giant demon bird."},
+  {name: "Topman Warcury", aliases: ["Warcury"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Fengxi)"}, haki: "OC", bounty: 0, height: null, origin: "Unknown", debut: 233, reveal: 1086, epithet: "Warrior God of Justice", clue: "A huge-shouldered Elder who becomes a giant boar."},
+  {name: "Ethanbaron V. Nusjuro", aliases: ["Nusjuro"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Bakotsu)"}, haki: "OAC", bounty: 0, height: null, origin: "Unknown", debut: 233, reveal: 1086, epithet: "Warrior God of Finance", clue: "A bald swordsman Elder who becomes a skeletal horse."},
+  {name: "Shepherd Ju Peter", aliases: ["Ju Peter", "Peter"], gender: "Male", aff: ["Five Elders", "World Nobles"], fruit: {type: ["Zoan"], name: "Unnamed Mythical Zoan (Sandworm)"}, haki: "O", bounty: 0, height: null, origin: "Unknown", debut: 233, reveal: 1086, epithet: "Warrior God of Agriculture", clue: "An Elder who swallows enemies as a giant sandworm."},
   {name: "Urouge", aliases: ["Mad Monk"], gender: "Male", aff: ["Fallen Monk Pirates", "Worst Generation"], fruit: {type: ["Paramecia"], name: "Unnamed Paramecia"}, haki: "", bounty: 108000000, height: 388, origin: "Sky Islands", debut: 498, epithet: "\"Mad Monk\"", clue: "A Supernova from a sky island who grows stronger the more he is hurt."},
   {name: "Shiki", aliases: ["Golden Lion", "Flying Pirate"], gender: "Male", aff: ["Golden Lion Pirates", "Rocks Pirates"], fruit: {type: ["Paramecia"], name: "Fuwa Fuwa no Mi"}, haki: "", bounty: null, height: null, origin: "Unknown", debut: 530, epithet: "\"The Golden Lion\"", clue: "The first man to escape Impel Down, with a ship's wheel stuck in his head."},
   {name: "Koala", aliases: [], gender: "Female", aff: ["Revolutionary Army", "Sun Pirates"], fruit: {type: [], name: ""}, haki: "", bounty: null, height: 160, origin: "Unknown", debut: 622, epithet: "Fish-Man Karate instructor", clue: "A former slave freed by Fisher Tiger who now works beside Sabo."},

@@ -272,11 +272,11 @@ main { max-width: 1080px; margin: 0 auto; padding: 8px 12px 60px; }
 /* ---------- Phone layout ---------- */
 /* Keep the Character column pinned while the rest of the board scrolls sideways. */
 .row > :first-child { position: sticky; left: 0; z-index: 3; }
-.row.head > :first-child { background: #0d3550; border-radius: 6px 6px 0 0; }
 .swipe-hint { display: none; text-align: center; color: var(--paper); font-size: 12px; opacity: .85;
   margin: -2px 0 6px; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
 @media (max-width: 640px) {
   .swipe-hint { display: block; }
+  .row.head > :first-child { background: #0d3550; border-radius: 6px 6px 0 0; }
   .board-wrap { -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
   .row > :first-child { box-shadow: 6px 0 8px -4px rgba(0,0,0,.45); }
 }
@@ -298,3 +298,9 @@ main { max-width: 1080px; margin: 0 auto; padding: 8px 12px 60px; }
 .search input { min-width: 0; flex: 1 1 auto; }
 .send { flex: 0 0 auto; }
 @media (max-width: 480px) { .search input { font-size: 16px; } /* 16px stops iPhones from zooming in on focus */ }
+
+/* Spoiler chooser */
+.spoiler-opts { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.spoiler-opts select { display: block; width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+  border: 2px solid rgba(120, 80, 30, .35); background: #fffaf0; font: inherit; font-size: 15px; color: inherit; }
+#sp-start:disabled { opacity: .5; cursor: not-allowed; }

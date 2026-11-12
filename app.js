@@ -24,6 +24,12 @@
   /** Character stats as of a chapter cutoff (applies `changes`). */
   function statsAt(c, chapter) {
     const s = { ...c, fruit: { ...c.fruit, type: [...c.fruit.type] } };
+    // Roll stats back to how they were at the chosen cutoff (see history.js). Entries are sorted latest-first,
+    // so the earliest matching value is applied last and wins.
+    const early = (typeof EARLY !== "undefined" && EARLY[c.name]) || [];
+    early.filter(([until]) => chapter < until).sort((a, b) => b[0] - a[0]).forEach(([, f]) => {
+      for (const [k, v] of Object.entries(f)) s[k] = (k === "fruit") ? { ...v, type: [...v.type] } : (Array.isArray(v) ? [...v] : v);
+    });
     (c.changes || []).filter(x => x.ch <= chapter).sort((a, b) => a.ch - b.ch).forEach(x => {
       for (const [k, v] of Object.entries(x)) if (k !== "ch") s[k] = (k === "fruit") ? { ...v } : v;
     });
@@ -195,7 +201,7 @@
     const lvl = SPOILER_LEVELS[settings.spoiler];
     $("intro-title").textContent = mode === "daily" ? "Guess today's One Piece character!" : "Endless mode — guess a random character!";
     $("intro-sub").textContent = `${pool().length} characters in the pool. Hints unlock at ${HINTS.map(h => h.at).join(", ")} guesses.`;
-    $("spoiler-pill").textContent = `Spoilers: ${lvl.label} · ${lvl.note}`;
+    $("spoiler-pill").textContent = `Spoilers: ${lvl.label} · ${lvl.type === "arc" ? "ch. " + lvl.chapter : lvl.note}`;
     $("guess-count").textContent = `${game.guesses.length} guess${game.guesses.length === 1 ? "" : "es"}`;
     $("giveup-btn").classList.toggle("hidden", mode !== "endless" || game.done);
     input.disabled = game.done; $("guess-btn").disabled = game.done;
@@ -379,23 +385,51 @@
     openModal(`<h2>Your Log Pose</h2>${block("daily", "Daily")}${block("endless", "Endless")}`);
   }
 
+  // ---- spoiler chooser (used by Settings and the first-visit picker) ----
+  const ARC_KEYS = Object.keys(SPOILER_LEVELS).filter(k => SPOILER_LEVELS[k].type === "arc");
+  function spoilerChooserHTML(current) {
+    const isArc = SPOILER_LEVELS[current] && SPOILER_LEVELS[current].type === "arc";
+    const arcSel = isArc ? current : "egghead";
+    return `<div class="spoiler-opts">
+      <label class="radio ${isArc ? "sel" : ""}"><input type="radio" name="sp-kind" value="arc" ${isArc ? "checked" : ""}>
+        <div><b>Up to a completed arc</b><small>Everything through the end of the arc you pick.</small>
+          <select id="arc-select" aria-label="Completed arc">
+            ${ARC_KEYS.map(k => `<option value="${k}" ${k === arcSel ? "selected" : ""}>${SPOILER_LEVELS[k].short} — ${SPOILER_LEVELS[k].note.split(" · ")[1]}</option>`).join("")}
+          </select></div></label>
+      ${["anime", "manga"].map(k => `
+      <label class="radio ${current === k ? "sel" : ""}"><input type="radio" name="sp-kind" value="${k}" ${current === k ? "checked" : ""}>
+        <div><b>${SPOILER_LEVELS[k].label}</b><small>${SPOILER_LEVELS[k].note}</small></div></label>`).join("")}
+    </div>`;
+  }
+  function readSpoilerChoice() {
+    const kind = (document.querySelector('input[name="sp-kind"]:checked') || {}).value;
+    if (!kind) return null;
+    return kind === "arc" ? $("arc-select").value : kind;
+  }
+  function wireSpoilerChooser(onChange) {
+    const sync = () => document.querySelectorAll(".spoiler-opts .radio").forEach(l => l.classList.toggle("sel", l.querySelector("input").checked));
+    document.querySelectorAll('input[name="sp-kind"]').forEach(r => r.onchange = () => { sync(); onChange && onChange(readSpoilerChoice()); });
+    const sel = $("arc-select");
+    sel.onclick = e => e.stopPropagation();
+    sel.onchange = () => { document.querySelector('input[name="sp-kind"][value="arc"]').checked = true; sync(); onChange && onChange(readSpoilerChoice()); };
+  }
+  function applySpoiler(level) {
+    if (!level || !SPOILER_LEVELS[level]) return;
+    settings.spoiler = level; save("spoiler", level);
+    save("endless:current", null);
+    newGame(mode);
+    toast(`Spoilers: ${SPOILER_LEVELS[level].label}`);
+  }
+
   function showSettings() {
     openModal(`<h2>Settings</h2>
       <h3>Spoiler level</h3>
-      <p class="muted">Only characters who have appeared by this point are included, and their stats (bounty, Haki, Devil Fruit…) are shown as of then.</p>
-      ${Object.entries(SPOILER_LEVELS).map(([k, v]) => `
-        <label class="radio ${k === settings.spoiler ? "sel" : ""}"><input type="radio" name="spoiler" value="${k}" ${k === settings.spoiler ? "checked" : ""}>
-        <div><b>${v.label}</b><small>${v.note}</small></div></label>`).join("")}
+      <p class="muted">Only characters who have appeared by this point are included, and their stats (bounty, Haki, Devil Fruit, affiliation…) are shown as they were then.</p>
+      ${spoilerChooserHTML(settings.spoiler)}
       <p class="muted">Changing this starts a fresh Endless round. The Daily puzzle is tracked separately for each level.</p>
       <h3>Data</h3>
       <div class="btn-row" style="justify-content:flex-start"><button class="btn secondary" id="reset-btn">Reset stats &amp; progress</button></div>`);
-    document.querySelectorAll('input[name="spoiler"]').forEach(r => r.onchange = () => {
-      settings.spoiler = r.value; save("spoiler", r.value);
-      document.querySelectorAll(".radio").forEach(l => l.classList.toggle("sel", l.querySelector("input").checked));
-      save("endless:current", null);
-      newGame(mode);
-      toast(`Spoilers: ${SPOILER_LEVELS[r.value].label}`);
-    });
+    wireSpoilerChooser(applySpoiler);
     $("reset-btn").onclick = () => {
       if (!confirmReset()) return;
       Object.keys(localStorage).filter(k => k.startsWith(STORE) && k !== STORE + "spoiler").forEach(k => localStorage.removeItem(k));
@@ -411,20 +445,17 @@
   function showSpoilerPicker(onDone) {
     modalLocked = true;
     openModal(`<h2>Pick your spoiler level</h2>
-      <p class="muted">Only characters (and stats like bounties, Haki and Devil Fruits) revealed up to this point will be used. You can change it any time in Settings ⚙️.</p>
-      <div class="spoiler-pick">
-        ${Object.entries(SPOILER_LEVELS).map(([k, v]) => `
-          <button class="spoiler-choice" data-level="${k}"><b>${v.label}</b><small>${v.note}</small></button>`).join("")}
-      </div>`);
+      <p class="muted">Only characters, and stats like bounties, Haki and Devil Fruits, revealed up to this point will be used. You can change it any time in Settings ⚙️.</p>
+      ${spoilerChooserHTML(null)}
+      <div class="btn-row"><button class="btn" id="sp-start" disabled>Start playing</button></div>`);
     $("modal-close").classList.add("hidden");
-    document.querySelectorAll(".spoiler-choice").forEach(b => b.onclick = () => {
-      settings.spoiler = b.dataset.level; save("spoiler", b.dataset.level);
-      save("endless:current", null);
+    wireSpoilerChooser(level => { $("sp-start").disabled = !level; });
+    $("sp-start").onclick = () => {
+      const level = readSpoilerChoice(); if (!level) return;
       modalLocked = false; closeModal();
-      newGame(mode);
-      toast(`Spoilers: ${SPOILER_LEVELS[b.dataset.level].label}`);
+      applySpoiler(level);
       if (onDone) onDone();
-    });
+    };
   }
 
   function showHelp() {

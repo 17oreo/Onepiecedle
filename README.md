@@ -26,3 +26,20 @@ Copy any entry in `characters.js` and change the fields (instructions are at the
 - Arrows on Bounty / Height / First Arc point toward the answer (higher or lower).
 - Hints unlock at 4, 7 and 10 guesses: epithet, then Devil Fruit, then a clue.
 - Progress and stats are saved in your browser (localStorage).
+
+## Adding characters without changing today's Daily
+Give every new character an `added: "YYYY-MM-DD"` field set to the day you add it. It becomes guessable
+(and appears in Endless) immediately, but only enters the Daily rotation starting the next day, so the
+current day's answer never changes mid-day.
+
+## Spoiler levels & stat history
+
+The spoiler setting lets players pick a completed arc (Alabasta → Egghead), the latest anime, or the latest manga.
+Characters only appear once they've debuted (or their `reveal` chapter), and their stats are rolled back to how
+they were at that point:
+
+- `changes` in `characters.js` — `{ ch, field: value }` entries that apply **from** chapter `ch` onward (newer reveals).
+- `EARLY` in `history.js` — `[untilChapter, { field: value }]` entries that apply **before** `untilChapter`
+  (older values, e.g. Luffy's 30M bounty before ch. 435). When several match, the earliest one wins.
+
+To add an arc option, add an entry with `type: "arc"` to `SPOILER_LEVELS` in `characters.js`.
