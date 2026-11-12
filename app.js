@@ -218,6 +218,7 @@
     renderHints();
     if (full) { rowsEl.innerHTML = ""; [...game.guesses].reverse().forEach(n => rowsEl.appendChild(buildRow(n, false))); }
     renderYesterday();
+    renderStreak();
   }
 
   function buildRow(name, animate) {
@@ -311,10 +312,10 @@
     input.value = ""; closeSuggestions();
     rowsEl.prepend(buildRow(name, true));
     const won = name === game.target;
-    if (won) { game.done = true; game.won = true; recordResult(true); }
+    if (won) { game.done = true; game.won = true; recordResult(true); streakHold = true; }
     persist();
     render(false);
-    if (won) setTimeout(() => showWin(), 2600);
+    if (won) setTimeout(() => { streakHold = false; renderStreak(true); showWin(); }, 2600);
   }
 
   function giveUp() {
@@ -331,12 +332,37 @@
       s.wins++; s.totalGuesses += game.guesses.length;
       if (mode === "daily") {
         const today = dayNumber();
-        s.streak = (s.lastDay === today - 1) ? s.streak + 1 : 1;
+        // Same day on another spoiler level keeps the streak; yesterday extends it; otherwise start over.
+        s.streak = s.lastDay === today ? s.streak : (s.lastDay === today - 1 ? s.streak + 1 : 1);
         s.lastDay = today;
       } else s.streak++;
       s.best = Math.max(s.best, s.streak);
     } else s.streak = 0;
     save(key, s);
+  }
+
+  // ---------- daily streak badge ----------
+  const STREAK_TIERS = [   // [min days, title, css class]
+    [30, "Pirate King", "t5"], [14, "Emperor", "t4"], [7, "Warlord", "t3"], [3, "Supernova", "t2"], [1, "Rookie", "t1"], [0, "No streak", "t0"],
+  ];
+  function currentStreak() {
+    const s = load("stats:daily", { streak: 0, lastDay: null });
+    const today = dayNumber();
+    const alive = s.lastDay === today || s.lastDay === today - 1;
+    return { n: alive ? s.streak : 0, playedToday: s.lastDay === today };
+  }
+  let streakHold = false;   // keep the old number until the winning row has finished flipping
+  function renderStreak(celebrate) {
+    const el = $("streak");
+    if (streakHold) return;
+    if (mode !== "daily") { el.classList.add("hidden"); return; }
+    const { n, playedToday } = currentStreak();
+    const [, title, cls] = STREAK_TIERS.find(([min]) => n >= min);
+    const next = [...STREAK_TIERS].reverse().find(([min]) => min > n);
+    el.className = `streak ${cls}`;
+    el.innerHTML = `<span class="flame">🔥</span><b>${n}</b><span class="streak-label">day streak · ${title}</span>`;
+    el.title = (n && !playedToday ? "Solve today's puzzle to keep your streak! " : "") + (next ? `${next[0] - n} more day${next[0] - n === 1 ? "" : "s"} to ${next[1]}` : "Max rank!");
+    if (celebrate) { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
   }
 
   // ---------- modals ----------
