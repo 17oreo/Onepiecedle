@@ -150,7 +150,13 @@
   const byName = name => pool().find(c => c.name === name);
 
   function dailyTargetName(d = new Date()) {
-    const names = CHARACTERS.filter(c => (c.reveal || c.debut) <= chapter()).map(c => c.name).sort();
+    // Characters with an `added` date only join the daily rotation the day AFTER they were added,
+    // so adding characters mid-day never changes that day's answer.
+    const today = dayNumber(d);
+    const addedDay = s => { const [y, m, dd] = s.split("-").map(Number); return Math.floor(Date.UTC(y, m - 1, dd) / 86400000); };
+    const names = CHARACTERS
+      .filter(c => (c.reveal || c.debut) <= chapter() && (!c.added || addedDay(c.added) < today))
+      .map(c => c.name).sort();
     const order = seededShuffle(names, DAILY_SEED);
     return order[((dayNumber(d) % order.length) + order.length) % order.length];
   }
@@ -320,7 +326,8 @@
 
   // ---------- modals ----------
   function openModal(html) { $("modal-body").innerHTML = html; $("modal-bg").classList.remove("hidden"); }
-  function closeModal() { $("modal-bg").classList.add("hidden"); clearInterval(countdownTimer); }
+  let modalLocked = false;   // true while the first-visit spoiler picker is open (must pick to continue)
+  function closeModal() { if (modalLocked) return; $("modal-bg").classList.add("hidden"); $("modal-close").classList.remove("hidden"); clearInterval(countdownTimer); }
   let countdownTimer = null;
 
   function shareText() {
@@ -401,13 +408,32 @@
     resetArmed = true; toast("Click again to confirm reset"); setTimeout(() => resetArmed = false, 3000); return false;
   }
 
+  function showSpoilerPicker(onDone) {
+    modalLocked = true;
+    openModal(`<h2>Pick your spoiler level</h2>
+      <p class="muted">Only characters (and stats like bounties, Haki and Devil Fruits) revealed up to this point will be used. You can change it any time in Settings ⚙️.</p>
+      <div class="spoiler-pick">
+        ${Object.entries(SPOILER_LEVELS).map(([k, v]) => `
+          <button class="spoiler-choice" data-level="${k}"><b>${v.label}</b><small>${v.note}</small></button>`).join("")}
+      </div>`);
+    $("modal-close").classList.add("hidden");
+    document.querySelectorAll(".spoiler-choice").forEach(b => b.onclick = () => {
+      settings.spoiler = b.dataset.level; save("spoiler", b.dataset.level);
+      save("endless:current", null);
+      modalLocked = false; closeModal();
+      newGame(mode);
+      toast(`Spoilers: ${SPOILER_LEVELS[b.dataset.level].label}`);
+      if (onDone) onDone();
+    });
+  }
+
   function showHelp() {
     openModal(`<h2>How to play</h2>
       <p>Guess the hidden One Piece character. Each guess reveals how its stats compare to the answer.</p>
       <ul>
         <li><b style="color:var(--correct)">Green</b>: exact match. <b style="color:#b39a14">Yellow</b>: partial match. <b style="color:var(--wrong)">Red</b>: no match.</li>
         <li><b>Affiliation</b>: green if the main group matches, yellow if they share any group, including former ones (hover a cell to see them all).</li>
-        <li><b>Devil Fruit</b> and <b>Haki</b>: yellow if some types overlap. Haki: 👁️ Observation · 💪 Armament · 👑 Conqueror's.</li>
+        <li><b>Devil Fruit</b> and <b>Haki</b>: yellow if some types overlap. Haki: 👁️ Observation · 💪 Armament · 👑 Conqueror's. Anyone with Conqueror's counts as having all three.</li>
         <li><b>Last Bounty</b>, <b>Height</b> and <b>First Arc</b>: an arrow shows whether the answer is higher (later) or lower (earlier). Bounty is the World Government bounty; Marines count as ฿0.</li>
         <li><b>Origin</b> is the sea or region listed on the wiki (East Blue, Grand Line, Sky Islands…).</li>
       </ul>
@@ -454,5 +480,9 @@
   window.OPDLE = { statsAt, compare, pool, dailyTargetName, settings, arcIndex, fmtBounty, fmtHeight, matches: q => matches(q) };
 
   newGame(mode === "endless" ? "endless" : "daily");
-  if (!load("seenHelp", false)) { save("seenHelp", true); showHelp(); }
+  const showHelpOnce = () => { if (!load("seenHelp", false)) { save("seenHelp", true); showHelp(); } };
+  // First visit: make the player choose a spoiler level before anything else, then show How to Play.
+  let hasSpoilerChoice = false;
+  try { hasSpoilerChoice = localStorage.getItem(STORE + "spoiler") !== null; } catch {}
+  if (!hasSpoilerChoice) showSpoilerPicker(showHelpOnce); else showHelpOnce();
 })();

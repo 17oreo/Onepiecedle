@@ -259,3 +259,12 @@ main { max-width: 1080px; margin: 0 auto; padding: 8px 12px 60px; }
   .hint .reveal { font-size: 12px; }
   .cell .arrow { font-size: 56px; }
 }
+
+/* First-visit spoiler picker */
+.spoiler-pick { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.spoiler-choice { text-align: left; padding: 14px 16px; border-radius: 10px; border: 2px solid rgba(120, 80, 30, .35);
+  background: rgba(255, 255, 255, .55); cursor: pointer; font: inherit; color: inherit; transition: transform .08s, border-color .15s, background .15s; }
+.spoiler-choice:hover { border-color: #c8102e; background: rgba(255, 255, 255, .85); transform: translateY(-1px); }
+.spoiler-choice b { display: block; font-size: 1.05rem; }
+.spoiler-choice small { display: block; opacity: .75; margin-top: 2px; }
+#modal-close.hidden { display: none; }
