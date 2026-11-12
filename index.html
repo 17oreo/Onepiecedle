@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Piece Dle — Guess the Character</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="sea"></div>
+
+<header class="top">
+  <button class="icon-btn" id="btn-help" title="How to play" aria-label="How to play">?</button>
+  <div class="brand">
+    <svg class="compass" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="3"/>
+      <circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>
+      <path d="M32 6 L37 32 L32 58 L27 32 Z" fill="currentColor"/>
+      <path d="M6 32 L32 27 L58 32 L32 37 Z" fill="currentColor" opacity=".55"/>
+      <circle cx="32" cy="32" r="3.5" fill="#1b2a3a"/>
+    </svg>
+    <h1>One Piece <span>Dle</span></h1>
+  </div>
+  <div class="top-right">
+    <button class="icon-btn" id="btn-stats" title="Stats" aria-label="Stats">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10h3v10H4zm6.5 0V4h3v16h-3zM17 20v-7h3v7h-3z" fill="currentColor"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-settings" title="Settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4L19.4 13zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <nav class="modes" role="tablist">
+    <button class="mode active" data-mode="daily" role="tab">Daily</button>
+    <button class="mode" data-mode="endless" role="tab">Endless</button>
+  </nav>
+
+  <section class="panel intro">
+    <h2 id="intro-title">Guess today's One Piece character!</h2>
+    <p id="intro-sub" class="muted"></p>
+    <div class="spoiler-pill" id="spoiler-pill" title="Change in Settings"></div>
+  </section>
+
+  <section class="panel guess-panel" id="guess-panel">
+    <div class="search">
+      <input id="guess-input" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Character name, alias, epithet…" aria-label="Character name">
+      <button id="guess-btn" class="send" aria-label="Guess">
+        <svg viewBox="0 0 24 24"><path d="M3 20l18-8L3 4v6l12 2-12 2z" fill="currentColor"/></svg>
+      </button>
+      <ul id="suggestions" class="suggestions" role="listbox"></ul>
+    </div>
+    <div class="guess-meta">
+      <span id="guess-count">0 guesses</span>
+      <button id="giveup-btn" class="link-btn hidden">Give up</button>
+    </div>
+  </section>
+
+  <section class="hints" id="hints"></section>
+
+  <section class="board-wrap">
+    <div class="board" id="board">
+      <div class="row head">
+        <div>Character</div><div>Gender</div><div>Affiliation</div><div>Devil Fruit</div>
+        <div>Haki</div><div>Last Bounty</div><div>Height</div><div>Origin</div><div>First Arc</div>
+      </div>
+      <div id="rows"></div>
+    </div>
+  </section>
+
+  <section class="panel legend">
+    <h3>Color indicators</h3>
+    <div class="legend-items">
+      <div><span class="sw correct"></span>Correct</div>
+      <div><span class="sw partial"></span>Partial</div>
+      <div><span class="sw wrong"></span>Incorrect</div>
+      <div><span class="sw wrong up"></span>Higher</div>
+      <div><span class="sw wrong down"></span>Lower</div>
+    </div>
+    <div class="haki-legend"><span>👁️ Observation</span><span>💪 Armament</span><span>👑 Conqueror's</span></div>
+  </section>
+
+  <p class="yesterday" id="yesterday"></p>
+</main>
+
+<!-- MODALS -->
+<div class="modal-bg hidden" id="modal-bg">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="close" id="modal-close" aria-label="Close">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script src="characters.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
