@@ -4,10 +4,23 @@
 
   // ---------- constants ----------
   const HINTS = [
-    { at: 4,  title: "First appearance", get: c => `Chapter ${c.debut} · ${ARCS[c.arc][0]} arc` },
+    { at: 4,  title: "First appearance", get: c => `Chapter ${c.debut} · ${debutEpisode(c)} · ${ARCS[c.arc][0]} arc` },
     { at: 7,  title: "Devil Fruit",    get: c => c.fruit.type.length === 0 ? "Hasn't eaten a Devil Fruit" : c.fruit.name },
     { at: 10, title: "Clue",           get: c => c.clue },
   ];
+  // Anime debut for the hint: exact from DEBUT_EP, otherwise estimated from the chapter → episode anchors.
+  function debutEpisode(c) {
+    if (DEBUT_EP[c.name]) return `Episode ${DEBUT_EP[c.name]}`;
+    const a = EP_ANCHORS, ch = c.debut;
+    let ep;
+    if (ch <= a[0][0]) ep = a[0][1];
+    else if (ch >= a[a.length - 1][0]) ep = a[a.length - 1][1] + (ch - a[a.length - 1][0]);
+    else {
+      const i = a.findIndex(([x]) => x >= ch), [x0, y0] = a[i - 1], [x1, y1] = a[i];
+      ep = Math.round(y0 + (y1 - y0) * (ch - x0) / (x1 - x0));
+    }
+    return ep > LATEST_EPISODE ? "Not in the anime yet" : `Episode ~${ep}`;
+  }
   const HAKI_NAMES = { O: "Observation", A: "Armament", C: "Conqueror's" };
   const HAKI_EMOJI = { O: "👁️", A: "💪", C: "👑" };
   const STORE = "opdle:";
