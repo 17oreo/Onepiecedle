@@ -4,7 +4,7 @@
 
   // ---------- constants ----------
   const HINTS = [
-    { at: 4,  title: "Epithet",        get: c => c.epithet || "No known epithet" },
+    { at: 4,  title: "First appearance", get: c => `Chapter ${c.debut} · ${ARCS[c.arc][0]} arc` },
     { at: 7,  title: "Devil Fruit",    get: c => c.fruit.type.length === 0 ? "Hasn't eaten a Devil Fruit" : c.fruit.name },
     { at: 10, title: "Clue",           get: c => c.clue },
   ];
@@ -128,12 +128,21 @@
     return { status: "wrong", arrow: t > g ? "up" : "down" };
   }
 
+  // Affiliation: green = same main group; yellow = they share another (often former) group, which is shown under the main one.
+  function affCell(g, t) {
+    const cls = g.aff[0].length > 16 ? "tiny" : "small", title = g.aff.join(", ");
+    if (g.aff[0] === t.aff[0]) return { status: "correct", text: g.aff[0], cls, title };
+    const shared = g.aff.filter(x => t.aff.includes(x));
+    if (!shared.length) return { status: "wrong", text: g.aff[0], cls, title };
+    return { status: "partial", cls: "tiny", title,
+      html: `${esc(g.aff[0])}<span class="aff-shared">shares: ${shared.map(esc).join(", ")}</span>` };
+  }
+
   function compare(g, t) {
     const hakiG = g.haki.split(""), hakiT = t.haki.split("");
     return [
       { status: g.gender === t.gender ? "correct" : "wrong", text: g.gender },
-      { status: g.aff[0] === t.aff[0] ? "correct" : (g.aff.some(x => t.aff.includes(x)) ? "partial" : "wrong"),
-        text: g.aff[0], cls: g.aff[0].length > 16 ? "tiny" : "small", title: g.aff.join(", ") },
+      affCell(g, t),
       { status: setCompare(g.fruit.type, t.fruit.type), text: fmtFruit(g.fruit.type), cls: g.fruit.type.length > 1 ? "small" : "" },
       { status: setCompare(hakiG, hakiT),
         html: hakiG.length ? `<div class="haki">${hakiG.map(h => `<span title="${HAKI_NAMES[h]}">${HAKI_EMOJI[h]}</span>`).join("")}</div>` : "None",
@@ -463,7 +472,7 @@
       <p>Guess the hidden One Piece character. Each guess reveals how its stats compare to the answer.</p>
       <ul>
         <li><b style="color:var(--correct)">Green</b>: exact match. <b style="color:#b39a14">Yellow</b>: partial match. <b style="color:var(--wrong)">Red</b>: no match.</li>
-        <li><b>Affiliation</b>: green if the main group matches, yellow if they share any group, including former ones (hover a cell to see them all).</li>
+        <li><b>Affiliation</b>: green if the main group matches, yellow if they share another group, often a former one, which is shown under the main group (hover a cell to see all their groups).</li>
         <li><b>Devil Fruit</b> and <b>Haki</b>: yellow if some types overlap. Haki: 👁️ Observation · 💪 Armament · 👑 Conqueror's. Anyone with Conqueror's counts as having all three.</li>
         <li><b>Last Bounty</b>, <b>Height</b> and <b>First Arc</b>: an arrow shows whether the answer is higher (later) or lower (earlier). Bounty is the World Government bounty; Marines count as ฿0.</li>
         <li><b>Origin</b> is the sea or region listed on the wiki (East Blue, Grand Line, Sky Islands…).</li>

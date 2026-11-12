@@ -304,3 +304,5 @@ main { max-width: 1080px; margin: 0 auto; padding: 8px 12px 60px; }
 .spoiler-opts select { display: block; width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px;
   border: 2px solid rgba(120, 80, 30, .35); background: #fffaf0; font: inherit; font-size: 15px; color: inherit; }
 #sp-start:disabled { opacity: .5; cursor: not-allowed; }
+
+.aff-shared { display: block; margin-top: 3px; font-size: .85em; font-weight: 600; opacity: .85; line-height: 1.15; }
