@@ -1,4 +1,4 @@
-/* One Piece Dle — Devil Fruit game (data in fruits.js, engine in imagegame.js). */
+/* Onepiecedle — Devil Fruit game (data in fruits.js, engine in imagegame.js). */
 (() => {
   "use strict";
   if (!window.makeImageGame || typeof FRUITS === "undefined") return;

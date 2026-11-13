@@ -1,4 +1,4 @@
-# One Piece Dle
+# Onepiecedle
 
 A local, Onepiecedle-style character guessing game.
 

@@ -1,4 +1,4 @@
-/* One Piece Dle — shared engine for the picture games (Jolly Roger, Devil Fruit).
+/* Onepiecedle — shared engine for the picture games (Jolly Roger, Devil Fruit).
  * Each game calls makeImageGame(cfg) with its data and wording; this file handles the zoom-out image, search,
  * hints, Daily/Endless, saves, stats, streak and the end screen. Shared helpers come from app.js (OPDLE_API). */
 window.makeImageGame = function (cfg) {
@@ -182,7 +182,7 @@ window.makeImageGame = function (cfg) {
   let timer = null;
   function shareText() {
     const marks = game.guesses.map(id => id === game.target ? cfg.icon : "🟥").join("");
-    const title = `One Piece Dle ${cfg.shareName} — ${mode === "daily" ? todayKey() : "Endless"}`;
+    const title = `Onepiecedle ${cfg.shareName} — ${mode === "daily" ? todayKey() : "Endless"}`;
     return `${title} (${SPOILER_LEVELS[settings.spoiler].short}${cfg.shareExtra ? cfg.shareExtra() : ""})\n${game.won ? `Found in ${game.guesses.length}` : "Gave up ☠️"}\n${marks}`;
   }
   function showEnd() {

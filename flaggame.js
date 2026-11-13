@@ -1,4 +1,4 @@
-/* One Piece Dle — Jolly Roger game (data in flags.js, engine in imagegame.js). */
+/* Onepiecedle — Jolly Roger game (data in flags.js, engine in imagegame.js). */
 (() => {
   "use strict";
   if (!window.makeImageGame || typeof FLAGS === "undefined") return;

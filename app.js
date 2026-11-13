@@ -1,4 +1,4 @@
-/* One Piece Dle — game logic. Data lives in characters.js */
+/* Onepiecedle — game logic. Data lives in characters.js */
 (() => {
   "use strict";
 
@@ -405,7 +405,7 @@
     const t = byName(game.target);
     const map = { correct: "🟩", partial: "🟨", wrong: "🟥" };
     const lines = game.guesses.map(n => compare(byName(n), t).map(r => map[r.status]).join(""));
-    const title = mode === "daily" ? `One Piece Dle — ${todayKey()}` : "One Piece Dle — Endless";
+    const title = mode === "daily" ? `Onepiecedle — ${todayKey()}` : "Onepiecedle — Endless";
     return `${title} (${SPOILER_LEVELS[settings.spoiler].short})\n${game.won ? `Found in ${game.guesses.length} 🏴‍☠️` : "Gave up ☠️"}\n${lines.join("\n")}`;
   }
 
