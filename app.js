@@ -447,7 +447,8 @@
         <div><b>${s.played}</b><span>Played</span></div><div><b>${s.wins}</b><span>Wins</span></div>
         <div><b>${s.streak}</b><span>${m.endsWith("daily") ? "Day streak" : "Win streak"}</span></div><div><b>${avg}</b><span>Avg. guesses</span></div></div>`;
     };
-    const others = Object.entries(extraGames).map(([id, g]) => `<h2 class="stats-game">${g.label}</h2>${block(id + ":daily", "Daily")}${block(id + ":endless", "Endless")}`).join("");
+    const others = Object.entries(extraGames).map(([id, g]) => `<h2 class="stats-game">${g.label}</h2>` +
+      (g.statsHTML ? g.statsHTML() : `${block(id + ":daily", "Daily")}${block(id + ":endless", "Endless")}`)).join("");
     openModal(`<h2>Your Log Pose</h2><h2 class="stats-game">🧑 Classic</h2>${block("daily", "Daily")}${block("endless", "Endless")}${others}`);
   }
 
@@ -593,6 +594,7 @@
   window.OPDLE_API = {
     load, save, esc, norm, seededShuffle, dayNumber, todayKey, settings, chapter, arcIndex,
     openModal, closeModal, toast, copy, renderStreak, spoilerPillText,
+    avatar, fmtBounty, characterPool: pool,
     isActive: g => activeGame === g,
     register(id, api) { extraGames[id] = api; if (savedGame === id) switchGame(id); },
   };

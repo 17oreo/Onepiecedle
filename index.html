@@ -40,9 +40,10 @@
 
 <main>
   <nav class="games" role="tablist">
-    <button class="game-tab active" data-game="classic" role="tab">🧑 Classic</button>
-    <button class="game-tab" data-game="flags" role="tab">🏴‍☠️ Jolly Roger</button>
-    <button class="game-tab" data-game="fruits" role="tab">🍇 Devil Fruit</button>
+    <button class="game-tab active" data-game="classic" role="tab"><span class="gi">🧑</span> Classic</button>
+    <button class="game-tab" data-game="flags" role="tab"><span class="gi">🏴‍☠️</span> Jolly Roger</button>
+    <button class="game-tab" data-game="fruits" role="tab"><span class="gi">🍇</span> Devil Fruit</button>
+    <button class="game-tab" data-game="bounty" role="tab"><span class="gi">💰</span> Bounty</button>
   </nav>
   <nav class="modes" role="tablist">
     <button class="mode active" data-mode="daily" role="tab">Daily</button>
@@ -103,6 +104,7 @@
   <!-- Filled in by imagegame.js -->
   <div id="flags-view" class="hidden"></div>
   <div id="fruits-view" class="hidden"></div>
+  <div id="bounty-view" class="hidden"></div>
 
   <p class="yesterday" id="yesterday"></p>
 </main>
@@ -125,5 +127,6 @@
 <script src="imagegame.js"></script>
 <script src="flaggame.js"></script>
 <script src="fruitgame.js"></script>
+<script src="bountygame.js"></script>
 </body>
 </html>

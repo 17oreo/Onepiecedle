@@ -50,3 +50,8 @@ To add an arc option, add an entry with `type: "arc"` to `SPOILER_LEVELS` in `ch
 small config file that calls `makeImageGame(...)`: `flaggame.js` (data in `flags.js`) and `fruitgame.js`
 (data in `fruits.js`). To add a flag or fruit, add an entry with a new, unique `id` — never rename an `id` once it's
 live, because the daily order depends on it.
+
+## Bounty Higher or Lower
+
+`bountygame.js`: uses every character with a known bounty above ฿0 at the chosen spoiler level (from `characters.js`
+and `history.js`), so new characters join automatically. Daily runs use a fresh seeded order each day.
