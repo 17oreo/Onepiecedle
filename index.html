@@ -39,6 +39,7 @@
   <nav class="games" role="tablist">
     <button class="game-tab active" data-game="classic" role="tab">🧑 Classic</button>
     <button class="game-tab" data-game="flags" role="tab">🏴‍☠️ Jolly Roger</button>
+    <button class="game-tab" data-game="fruits" role="tab">🍇 Devil Fruit</button>
   </nav>
   <nav class="modes" role="tablist">
     <button class="mode active" data-mode="daily" role="tab">Daily</button>
@@ -96,28 +97,9 @@
   </section>
   </div>
 
-  <div id="flag-view" class="hidden">
-    <section class="panel jr-panel">
-      <div class="jr-frame" id="jr-frame"><img id="jr-img" referrerpolicy="no-referrer" alt="Mystery Jolly Roger" draggable="false"></div>
-      <p class="jr-zoom muted" id="jr-zoom"></p>
-    </section>
-    <section class="panel guess-panel">
-      <div class="search">
-        <input id="jr-input" type="text" autocomplete="off" spellcheck="false"
-               placeholder="Crew or captain name…" aria-label="Crew or captain name">
-        <button id="jr-guess-btn" class="send" aria-label="Guess">
-          <svg viewBox="0 0 24 24"><path d="M3 20l18-8L3 4v6l12 2-12 2z" fill="currentColor"/></svg>
-        </button>
-        <ul id="jr-suggestions" class="suggestions" role="listbox"></ul>
-      </div>
-      <div class="guess-meta">
-        <span id="jr-count">0 guesses</span>
-        <button id="jr-giveup" class="link-btn">Give up</button>
-      </div>
-    </section>
-    <section class="hints" id="jr-hints"></section>
-    <section class="jr-guesses" id="jr-guesses"></section>
-  </div>
+  <!-- Filled in by imagegame.js -->
+  <div id="flags-view" class="hidden"></div>
+  <div id="fruits-view" class="hidden"></div>
 
   <p class="yesterday" id="yesterday"></p>
 </main>
@@ -135,7 +117,10 @@
 <script src="characters.js"></script>
 <script src="history.js"></script>
 <script src="flags.js"></script>
+<script src="fruits.js"></script>
 <script src="app.js"></script>
+<script src="imagegame.js"></script>
 <script src="flaggame.js"></script>
+<script src="fruitgame.js"></script>
 </body>
 </html>

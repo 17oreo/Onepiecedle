@@ -357,3 +357,12 @@ main { max-width: 1080px; margin: 0 auto; padding: 8px 12px 60px; }
 .jr-end .nm { font: 800 20px Nunito, sans-serif; margin-top: 8px; }
 .jr-end .ep { color: var(--muted); font-size: 14px; }
 @media (max-width: 480px) { .game-tab { font-size: 13px; padding: 6px 12px; } .jr-chip small { display: none; } }
+
+/* ---------- picture games (imagegame.js) ---------- */
+.jr-frame img.instant { transition: none; }
+.jr-frame img.loading { opacity: 0; }
+.ig-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; position: relative; z-index: 1; flex-wrap: wrap; }
+.ig-diff { display: inline-flex; border: 2px solid var(--wood); border-radius: 999px; overflow: hidden; }
+.ig-diff button { font: 800 13px Nunito, sans-serif; padding: 5px 14px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.ig-diff button.on { background: var(--wood); color: var(--paper); }
+.ig-diff-note { font-size: 12px; }

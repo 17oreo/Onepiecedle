@@ -44,8 +44,9 @@ they were at that point:
 
 To add an arc option, add an entry with `type: "arc"` to `SPOILER_LEVELS` in `characters.js`.
 
-## Jolly Roger game
+## Picture games (Jolly Roger, Devil Fruit)
 
-`flags.js` holds the flags (image, captains, type, first chapter) and `flaggame.js` runs the game, reusing the
-helpers `app.js` exposes as `window.OPDLE_API`. To add a flag, add an entry to `FLAGS` with a new, unique `id`
-(never rename an `id` once it's live: the daily order depends on it).
+`imagegame.js` is a shared engine (zoom-out picture, search, hints, Daily/Endless, stats, streak). Each game is a
+small config file that calls `makeImageGame(...)`: `flaggame.js` (data in `flags.js`) and `fruitgame.js`
+(data in `fruits.js`). To add a flag or fruit, add an entry with a new, unique `id` — never rename an `id` once it's
+live, because the daily order depends on it.

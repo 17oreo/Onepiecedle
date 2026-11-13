@@ -171,8 +171,9 @@
   const settings = { spoiler: load("spoiler", "egghead") };
   if (!SPOILER_LEVELS[settings.spoiler]) settings.spoiler = "egghead";
   let mode = load("mode", "daily");
-  let activeGame = load("game", "classic") === "flags" ? "flags" : "classic";
-  let FlagGame = null;   // set by flaggame.js
+  let activeGame = "classic";
+  const savedGame = load("game", "classic");   // switched to once that game registers
+  const extraGames = {};                       // other games register here (see imagegame.js)
   let game = null; // { mode, target, guesses[], revealed[], done, won }
 
   const chapter = () => SPOILER_LEVELS[settings.spoiler].chapter;
@@ -446,8 +447,8 @@
         <div><b>${s.played}</b><span>Played</span></div><div><b>${s.wins}</b><span>Wins</span></div>
         <div><b>${s.streak}</b><span>${m.endsWith("daily") ? "Day streak" : "Win streak"}</span></div><div><b>${avg}</b><span>Avg. guesses</span></div></div>`;
     };
-    const flagBlock = FlagGame ? `<h2 class="stats-game">🏴‍☠️ Jolly Roger</h2>${block("flags:daily", "Daily")}${block("flags:endless", "Endless")}` : "";
-    openModal(`<h2>Your Log Pose</h2><h2 class="stats-game">🧑 Classic</h2>${block("daily", "Daily")}${block("endless", "Endless")}${flagBlock}`);
+    const others = Object.entries(extraGames).map(([id, g]) => `<h2 class="stats-game">${g.label}</h2>${block(id + ":daily", "Daily")}${block(id + ":endless", "Endless")}`).join("");
+    openModal(`<h2>Your Log Pose</h2><h2 class="stats-game">🧑 Classic</h2>${block("daily", "Daily")}${block("endless", "Endless")}${others}`);
   }
 
   // ---- spoiler chooser (used by Settings and the first-visit picker) ----
@@ -483,7 +484,7 @@
     settings.spoiler = level; save("spoiler", level);
     save("endless:current", null);
     newGame(mode);
-    if (FlagGame) FlagGame.onSpoilerChange();
+    Object.values(extraGames).forEach(g => g.onSpoilerChange());
     toast(`Spoilers: ${SPOILER_LEVELS[level].label}`);
   }
 
@@ -499,7 +500,7 @@
     $("reset-btn").onclick = () => {
       if (!confirmReset()) return;
       Object.keys(localStorage).filter(k => k.startsWith(STORE) && k !== STORE + "spoiler").forEach(k => localStorage.removeItem(k));
-      closeModal(); newGame(mode); if (FlagGame) FlagGame.onSpoilerChange(); toast("Progress reset");
+      closeModal(); newGame(mode); Object.values(extraGames).forEach(g => g.onSpoilerChange()); toast("Progress reset");
     };
   }
   let resetArmed = false;
@@ -525,7 +526,7 @@
   }
 
   function showHelp() {
-    if (activeGame === "flags" && FlagGame) { openModal(FlagGame.helpHTML()); return; }
+    if (extraGames[activeGame]) { openModal(extraGames[activeGame].helpHTML()); return; }
     openModal(`<h2>How to play</h2>
       <p>Guess the hidden One Piece character. Each guess reveals how its stats compare to the answer.</p>
       <ul>
@@ -566,17 +567,17 @@
   $("giveup-btn").onclick = giveUp;
   $("hints").addEventListener("click", e => { const b = e.target.closest("button[data-hint]"); if (b) { game.revealed[+b.dataset.hint] = true; persist(); renderHints(); } });
   document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
-    if (activeGame === "flags" && FlagGame) FlagGame.setMode(b.dataset.mode);
+    if (extraGames[activeGame]) extraGames[activeGame].setMode(b.dataset.mode);
     else if (b.dataset.mode !== mode) newGame(b.dataset.mode);
   });
   function switchGame(g) {
-    if (g === "flags" && !FlagGame) return;
+    if (g !== "classic" && !extraGames[g]) return;
     activeGame = g; save("game", g);
     document.querySelectorAll(".game-tab").forEach(b => b.classList.toggle("active", b.dataset.game === g));
     $("classic-view").classList.toggle("hidden", g !== "classic");
-    $("flag-view").classList.toggle("hidden", g !== "flags");
+    Object.keys(extraGames).forEach(id => $(id + "-view").classList.toggle("hidden", g !== id));
     closeSuggestions();
-    if (g === "flags") FlagGame.show(); else render(true);
+    if (extraGames[g]) extraGames[g].show(); else render(true);
   }
   document.querySelectorAll(".game-tab").forEach(b => b.onclick = () => { if (b.dataset.game !== activeGame) switchGame(b.dataset.game); });
   $("btn-help").onclick = showHelp;
@@ -593,7 +594,7 @@
     load, save, esc, norm, seededShuffle, dayNumber, todayKey, settings, chapter, arcIndex,
     openModal, closeModal, toast, copy, renderStreak, spoilerPillText,
     isActive: g => activeGame === g,
-    register(fg) { FlagGame = fg; if (activeGame === "flags") switchGame("flags"); },
+    register(id, api) { extraGames[id] = api; if (savedGame === id) switchGame(id); },
   };
   window.OPDLE = { statsAt, compare, pool, dailyTargetName, settings, arcIndex, fmtBounty, fmtHeight, matches: q => matches(q) };
 
