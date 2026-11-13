@@ -43,3 +43,9 @@ they were at that point:
   (older values, e.g. Luffy's 30M bounty before ch. 435). When several match, the earliest one wins.
 
 To add an arc option, add an entry with `type: "arc"` to `SPOILER_LEVELS` in `characters.js`.
+
+## Jolly Roger game
+
+`flags.js` holds the flags (image, captains, type, first chapter) and `flaggame.js` runs the game, reusing the
+helpers `app.js` exposes as `window.OPDLE_API`. To add a flag, add an entry to `FLAGS` with a new, unique `id`
+(never rename an `id` once it's live: the daily order depends on it).

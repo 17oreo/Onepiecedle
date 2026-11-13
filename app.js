@@ -171,6 +171,8 @@
   const settings = { spoiler: load("spoiler", "egghead") };
   if (!SPOILER_LEVELS[settings.spoiler]) settings.spoiler = "egghead";
   let mode = load("mode", "daily");
+  let activeGame = load("game", "classic") === "flags" ? "flags" : "classic";
+  let FlagGame = null;   // set by flaggame.js
   let game = null; // { mode, target, guesses[], revealed[], done, won }
 
   const chapter = () => SPOILER_LEVELS[settings.spoiler].chapter;
@@ -222,20 +224,21 @@
   const input = $("guess-input"), sugg = $("suggestions"), rowsEl = $("rows");
   let activeIdx = -1, currentList = [];
 
+  const spoilerPillText = () => { const lvl = SPOILER_LEVELS[settings.spoiler]; return `Spoilers: ${lvl.label} · ${lvl.type === "arc" ? "ch. " + lvl.chapter : lvl.note}`; };
   function render(full) {
-    document.querySelectorAll(".mode").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
-    const lvl = SPOILER_LEVELS[settings.spoiler];
-    $("intro-title").textContent = mode === "daily" ? "Guess today's One Piece character!" : "Endless mode — guess a random character!";
-    $("intro-sub").textContent = `${pool().length} characters in the pool. Hints unlock at ${HINTS.map(h => h.at).join(", ")} guesses.`;
-    $("spoiler-pill").textContent = `Spoilers: ${lvl.label} · ${lvl.type === "arc" ? "ch. " + lvl.chapter : lvl.note}`;
+    if (activeGame === "classic") {
+      document.querySelectorAll(".mode").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+      $("intro-title").textContent = mode === "daily" ? "Guess today's One Piece character!" : "Endless mode — guess a random character!";
+      $("intro-sub").textContent = `${pool().length} characters in the pool. Hints unlock at ${HINTS.map(h => h.at).join(", ")} guesses.`;
+      $("spoiler-pill").textContent = spoilerPillText();
+    }
     $("guess-count").textContent = `${game.guesses.length} guess${game.guesses.length === 1 ? "" : "es"}`;
     $("giveup-btn").classList.toggle("hidden", mode !== "endless" || game.done);
     input.disabled = game.done; $("guess-btn").disabled = game.done;
     input.placeholder = game.done ? (mode === "daily" ? "Come back tomorrow for a new character!" : "Press New character to play again") : "Character name, alias, epithet…";
     renderHints();
     if (full) { rowsEl.innerHTML = ""; [...game.guesses].reverse().forEach(n => rowsEl.appendChild(buildRow(n, false))); }
-    renderYesterday();
-    renderStreak();
+    if (activeGame === "classic") { renderYesterday(); renderStreak(); }
   }
 
   function buildRow(name, animate) {
@@ -370,18 +373,19 @@
   const STREAK_TIERS = [   // [min days, title, css class]
     [30, "Pirate King", "t5"], [14, "Emperor", "t4"], [7, "Warlord", "t3"], [3, "Supernova", "t2"], [1, "Rookie", "t1"], [0, "No streak", "t0"],
   ];
-  function currentStreak() {
-    const s = load("stats:daily", { streak: 0, lastDay: null });
+  function currentStreak(key = "stats:daily") {
+    const s = load(key, { streak: 0, lastDay: null });
     const today = dayNumber();
     const alive = s.lastDay === today || s.lastDay === today - 1;
     return { n: alive ? s.streak : 0, playedToday: s.lastDay === today };
   }
   let streakHold = false;   // keep the old number until the winning row has finished flipping
-  function renderStreak(celebrate) {
+  // opts lets the other games show their own streak: { mode, key }
+  function renderStreak(celebrate, opts = { mode, key: "stats:daily" }) {
     const el = $("streak");
     if (streakHold) return;
-    if (mode !== "daily") { el.classList.add("hidden"); return; }
-    const { n, playedToday } = currentStreak();
+    if (opts.mode !== "daily") { el.classList.add("hidden"); return; }
+    const { n, playedToday } = currentStreak(opts.key);
     const [, title, cls] = STREAK_TIERS.find(([min]) => n >= min);
     const next = [...STREAK_TIERS].reverse().find(([min]) => min > n);
     el.className = `streak ${cls}`;
@@ -440,9 +444,10 @@
       const avg = s.wins ? (s.totalGuesses / s.wins).toFixed(1) : "–";
       return `<h3>${label}</h3><div class="stats-grid">
         <div><b>${s.played}</b><span>Played</span></div><div><b>${s.wins}</b><span>Wins</span></div>
-        <div><b>${s.streak}</b><span>${m === "daily" ? "Day streak" : "Win streak"}</span></div><div><b>${avg}</b><span>Avg. guesses</span></div></div>`;
+        <div><b>${s.streak}</b><span>${m.endsWith("daily") ? "Day streak" : "Win streak"}</span></div><div><b>${avg}</b><span>Avg. guesses</span></div></div>`;
     };
-    openModal(`<h2>Your Log Pose</h2>${block("daily", "Daily")}${block("endless", "Endless")}`);
+    const flagBlock = FlagGame ? `<h2 class="stats-game">🏴‍☠️ Jolly Roger</h2>${block("flags:daily", "Daily")}${block("flags:endless", "Endless")}` : "";
+    openModal(`<h2>Your Log Pose</h2><h2 class="stats-game">🧑 Classic</h2>${block("daily", "Daily")}${block("endless", "Endless")}${flagBlock}`);
   }
 
   // ---- spoiler chooser (used by Settings and the first-visit picker) ----
@@ -478,6 +483,7 @@
     settings.spoiler = level; save("spoiler", level);
     save("endless:current", null);
     newGame(mode);
+    if (FlagGame) FlagGame.onSpoilerChange();
     toast(`Spoilers: ${SPOILER_LEVELS[level].label}`);
   }
 
@@ -493,7 +499,7 @@
     $("reset-btn").onclick = () => {
       if (!confirmReset()) return;
       Object.keys(localStorage).filter(k => k.startsWith(STORE) && k !== STORE + "spoiler").forEach(k => localStorage.removeItem(k));
-      closeModal(); newGame(mode); toast("Progress reset");
+      closeModal(); newGame(mode); if (FlagGame) FlagGame.onSpoilerChange(); toast("Progress reset");
     };
   }
   let resetArmed = false;
@@ -519,6 +525,7 @@
   }
 
   function showHelp() {
+    if (activeGame === "flags" && FlagGame) { openModal(FlagGame.helpHTML()); return; }
     openModal(`<h2>How to play</h2>
       <p>Guess the hidden One Piece character. Each guess reveals how its stats compare to the answer.</p>
       <ul>
@@ -558,7 +565,20 @@
   $("guess-btn").onclick = () => submit();
   $("giveup-btn").onclick = giveUp;
   $("hints").addEventListener("click", e => { const b = e.target.closest("button[data-hint]"); if (b) { game.revealed[+b.dataset.hint] = true; persist(); renderHints(); } });
-  document.querySelectorAll(".mode").forEach(b => b.onclick = () => { if (b.dataset.mode !== mode) newGame(b.dataset.mode); });
+  document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
+    if (activeGame === "flags" && FlagGame) FlagGame.setMode(b.dataset.mode);
+    else if (b.dataset.mode !== mode) newGame(b.dataset.mode);
+  });
+  function switchGame(g) {
+    if (g === "flags" && !FlagGame) return;
+    activeGame = g; save("game", g);
+    document.querySelectorAll(".game-tab").forEach(b => b.classList.toggle("active", b.dataset.game === g));
+    $("classic-view").classList.toggle("hidden", g !== "classic");
+    $("flag-view").classList.toggle("hidden", g !== "flags");
+    closeSuggestions();
+    if (g === "flags") FlagGame.show(); else render(true);
+  }
+  document.querySelectorAll(".game-tab").forEach(b => b.onclick = () => { if (b.dataset.game !== activeGame) switchGame(b.dataset.game); });
   $("btn-help").onclick = showHelp;
   $("btn-stats").onclick = showStats;
   $("btn-settings").onclick = showSettings;
@@ -568,6 +588,13 @@
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
   // expose for tests/debugging
+  // Shared helpers for the other games (flaggame.js)
+  window.OPDLE_API = {
+    load, save, esc, norm, seededShuffle, dayNumber, todayKey, settings, chapter, arcIndex,
+    openModal, closeModal, toast, copy, renderStreak, spoilerPillText,
+    isActive: g => activeGame === g,
+    register(fg) { FlagGame = fg; if (activeGame === "flags") switchGame("flags"); },
+  };
   window.OPDLE = { statsAt, compare, pool, dailyTargetName, settings, arcIndex, fmtBounty, fmtHeight, matches: q => matches(q) };
 
   newGame(mode === "endless" ? "endless" : "daily");
