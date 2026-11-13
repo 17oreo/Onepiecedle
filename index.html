@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The One Piece Wiki swaps big images for a placeholder when they're shown on another site; not sending a referrer avoids that -->
+<meta name="referrer" content="no-referrer">
 <title>One Piece Dle — Guess the Character</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
@@ -96,7 +98,7 @@
 
   <div id="flag-view" class="hidden">
     <section class="panel jr-panel">
-      <div class="jr-frame" id="jr-frame"><img id="jr-img" alt="Mystery Jolly Roger" draggable="false"></div>
+      <div class="jr-frame" id="jr-frame"><img id="jr-img" referrerpolicy="no-referrer" alt="Mystery Jolly Roger" draggable="false"></div>
       <p class="jr-zoom muted" id="jr-zoom"></p>
     </section>
     <section class="panel guess-panel">
