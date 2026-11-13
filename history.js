@@ -2,6 +2,7 @@
 // changed over the story. Each entry is [untilChapter, {fields}]: the fields are used when the
 // chosen spoiler cutoff is BEFORE untilChapter. Characters' current stats live in characters.js.
 const EARLY = {
+  "Charlotte Lola": [[903, {"bounty": null}], [651, {"aff": ["Rolling Pirates"]}]],
   "Alvida": [[1058, {"aff": ["Buggy Pirates", "Alvida Pirates"]}], [233, {"aff": ["Alvida Pirates"]}]],
   "Bartholomew Kuma": [[598, {"haki": ""}], [592, {"aff": ["Seven Warlords"]}], [474, {"bounty": null}]],
   "Bartolomeo": [[802, {"bounty": 150000000}]],
