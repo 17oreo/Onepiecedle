@@ -72,7 +72,7 @@
   }
   const fmtHeight = cm => (cm === null || cm === undefined) ? "Unknown" : `${Math.floor(cm / 100)}m${String(cm % 100).padStart(2, "0")}`;
   const fmtFruit = t => t.length ? t.join(" + ") : "None";
-  const initials = name => name.replace(/["'.]/g, "").split(/\s+/).filter(w => !/^d$/i.test(w)).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+  const initials = name => name.replace(/["'.]/g, "").replace(/^Saint\s+/, "").split(/\s+/).filter(w => !/^d$/i.test(w)).slice(0, 2).map(w => w[0]).join("").toUpperCase();
   function colorFor(name) { let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360; return `hsl(${h} 55% 42%)`; }
   // Portraits are loaded straight from the One Piece Wiki ("<Page> Portrait.png").
   // If that fails we try the anime infobox image, then fall back to initials.
@@ -182,21 +182,25 @@
     // so adding characters mid-day never changes that day's answer.
     const today = dayNumber(d);
     const addedDay = s => { const [y, m, dd] = s.split("-").map(Number); return Math.floor(Date.UTC(y, m - 1, dd) / 86400000); };
-    const names = CHARACTERS
-      .filter(c => (c.reveal || c.debut) <= chapter() && (!c.added || addedDay(c.added) < today))
-      .map(c => c.name).sort();
-    const order = seededShuffle(names, DAILY_SEED);
-    return order[((dayNumber(d) % order.length) + order.length) % order.length];
+    // Shuffle by `key` (a character's original name) so renaming someone never changes the daily answers.
+    const eligible = CHARACTERS.filter(c => (c.reveal || c.debut) <= chapter() && (!c.added || addedDay(c.added) < today));
+    const nameOf = Object.fromEntries(eligible.map(c => [c.key || c.name, c.name]));
+    const order = seededShuffle(Object.keys(nameOf).sort(), DAILY_SEED);
+    return nameOf[order[((dayNumber(d) % order.length) + order.length) % order.length]];
   }
+
+  // Old saves may use a character's previous name.
+  const rename = n => (typeof RENAMED !== "undefined" && RENAMED[n]) || n;
+  const migrate = g => g && ({ ...g, target: rename(g.target), guesses: (g.guesses || []).map(rename) });
 
   function newGame(m) {
     mode = m; save("mode", m);
     if (m === "daily") {
       const key = `daily:${todayKey()}:${settings.spoiler}`;
-      const saved = load(key, null);
+      const saved = migrate(load(key, null));
       game = { mode: m, key, target: dailyTargetName(), guesses: [], revealed: [false, false, false], done: false, won: false, ...(saved || {}) };
     } else {
-      const saved = load("endless:current", null);
+      const saved = migrate(load("endless:current", null));
       if (saved && saved.spoiler === settings.spoiler && !saved.done && byName(saved.target)) {
         game = { ...saved, mode: m, key: "endless:current" };
       } else {
@@ -329,6 +333,14 @@
     persist();
     render(false);
     if (won) setTimeout(() => { streakHold = false; renderStreak(true); showWin(); }, 2600);
+    else if (compare(byName(name), byName(game.target)).every(r => r.status === "correct")) {
+      // Every column matched but it's someone else (e.g. two Elders with identical stats).
+      setTimeout(() => openModal(`<h2>So close! 🤔</h2>
+        <p><b>${esc(name)}</b> matches every clue, but isn't today's character.</p>
+        <p class="muted">Someone else has the exact same stats. Keep guessing!</p>
+        <div class="btn-row"><button class="btn" id="lookalike-ok">Keep guessing</button></div>`), 2600);
+      setTimeout(() => { const b = $("lookalike-ok"); if (b) b.onclick = () => closeModal(); }, 2650);
+    }
   }
 
   function giveUp() {
